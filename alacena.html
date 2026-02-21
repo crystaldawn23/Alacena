@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alacena | Search Enabled</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-900 pb-40">
+
+    <nav class="bg-emerald-900 text-white p-6 shadow-xl sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center text-sm font-bold">
+            <h1 class="text-2xl font-black tracking-tighter text-emerald-400 uppercase">Alacena</h1>
+            <div class="flex gap-2">
+                <button onclick="showTab('pantry')" class="px-4 py-2 rounded-lg hover:bg-emerald-800">Pantry</button>
+                <button onclick="showTab('library')" class="px-4 py-2 rounded-lg hover:bg-emerald-800">Library</button>
+                <button onclick="showTab('planner')" class="px-4 py-2 bg-emerald-500 rounded-lg shadow-lg">Planner</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto p-4">
+        <section id="planner-tab">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-indigo-900 text-white p-6 rounded-3xl shadow-xl">
+                        <h2 class="text-xl font-black uppercase tracking-widest mb-4">🗓️ Current Plan</h2>
+                        <div id="current-plan-list" class="space-y-2"></div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                            <h2 class="text-lg font-bold text-emerald-900 uppercase">Suggestions</h2>
+                            <div class="flex w-full md:w-auto gap-2">
+                                <input type="text" id="search-planner" oninput="render()" placeholder="Search recipes..." class="flex-1 p-2 border rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500">
+                                <button onclick="pickRandom()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold text-xs shadow">🎲 Random</button>
+                            </div>
+                        </div>
+                        <div id="suggestions-list" class="space-y-4"></div>
+                    </div>
+                </div>
+                
+                <div class="bg-emerald-50 p-6 rounded-2xl border-2 border-emerald-200 h-fit sticky top-24 shadow-sm">
+                    <h2 class="text-xl font-bold mb-4 text-emerald-900">🛒 Trip List</h2>
+                    <div class="space-y-4">
+                        <ul id="recipe-shopping-list" class="space-y-2 font-bold text-emerald-800 text-sm italic"></ul>
+                        <hr class="border-emerald-200">
+                        <div class="flex gap-2"><input type="text" id="extra-input" placeholder="Milk, etc..." class="flex-1 p-2 border rounded text-xs outline-none"><button onclick="addExtraItem()" class="bg-emerald-600 text-white px-3 rounded font-bold">+</button></div>
+                        <ul id="extra-shopping-list" class="space-y-2 font-bold text-emerald-800 text-sm"></ul>
+                        <button onclick="clearTrip()" class="w-full mt-4 text-[10px] text-red-500 font-black uppercase tracking-widest border border-red-200 py-2 rounded-lg">Reset All</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="library-tab" class="hidden">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border mb-6">
+                <h2 class="text-xl font-bold mb-4 text-emerald-800 uppercase text-xs">Library Search & Add</h2>
+                <div class="flex flex-col md:flex-row gap-2 mb-4">
+                    <input type="text" id="search-library" oninput="render()" placeholder="Search your collection..." class="flex-1 p-2 border rounded-xl text-sm outline-none">
+                    <button onclick="openAddModal()" class="bg-emerald-600 text-white px-6 py-2 rounded-xl font-bold text-sm">+ Add Recipe</button>
+                </div>
+            </div>
+            <div id="full-recipe-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </section>
+
+        <section id="pantry-tab" class="hidden">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border">
+                <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">🏠 Pantry</h2><button onclick="restorePantry()" class="text-xs text-red-500 font-bold uppercase">Reset Staples</button></div>
+                <div id="pantry-list" class="flex flex-wrap gap-2 text-[10px] mb-6"></div>
+                <div class="flex gap-2"><input type="text" id="pantry-input" class="flex-1 p-2 border rounded-lg outline-none"><button onclick="addPantryItem()" class="bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold">+</button></div>
+            </div>
+        </section>
+    </main>
+
+    <div id="editModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[100]">
+        <div class="bg-white rounded-3xl w-full max-w-lg p-8">
+            <h2 id="modal-title" class="text-2xl font-bold mb-4 text-emerald-900">Edit Recipe</h2>
+            <input type="hidden" id="edit-id">
+            <input type="text" id="edit-name" class="w-full p-3 border rounded-xl mb-4 outline-none" placeholder="Recipe Name">
+            <textarea id="edit-ings" class="w-full p-3 border rounded-xl h-32 mb-4 outline-none" placeholder="Ingredients (comma separated)"></textarea>
+            <div class="flex gap-2">
+                <button onclick="saveEdit()" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold">Save</button>
+                <button onclick="closeEdit()" class="flex-1 bg-gray-100 py-3 rounded-xl">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="recipes.js"></script>
+    <script>
+        const initialStaples = ["chicken breasts", "chicken thighs", "ground beef", "pork chops", "bacon", "shrimp", "butter", "olive oil", "vegetable oil", "salt", "pepper", "garlic", "onion", "red onion", "chicken broth", "beef broth", "rice", "orzo", "spaghetti", "linguine", "ramen noodles", "flour", "honey", "soy sauce", "balsamic vinegar", "lime juice", "lemon juice", "cumin", "chili powder", "paprika", "dried rosemary", "italian seasoning", "taco seasoning", "parmesan", "cheddar", "monterey jack", "salsa", "enchilada sauce", "diced tomatoes", "grape tomatoes", "romaine", "spinach", "cucumber", "avocados", "cilantro", "fresh basil", "frozen corn", "black beans"];
+
+        let userAdded = JSON.parse(localStorage.getItem('alacena_v26_user')) || [];
+        let pantry = JSON.parse(localStorage.getItem('alacena_v26_pantry')) || [...initialStaples];
+        let extras = JSON.parse(localStorage.getItem('alacena_v26_extras')) || [];
+        let plannedIds = [];
+
+        function showTab(tab) {
+            document.querySelectorAll('section[id$="-tab"]').forEach(s => s.classList.add('hidden'));
+            document.getElementById(tab + '-tab').classList.remove('hidden');
+            render();
+        }
+
+        function render() {
+            localStorage.setItem('alacena_v26_user', JSON.stringify(userAdded));
+            localStorage.setItem('alacena_v26_pantry', JSON.stringify(pantry));
+            localStorage.setItem('alacena_v26_extras', JSON.stringify(extras));
+            
+            const library = (typeof preloadedRecipes !== 'undefined') ? [...preloadedRecipes, ...userAdded] : [...userAdded];
+            const plannerSearch = document.getElementById('search-planner').value.toLowerCase();
+            const librarySearch = document.getElementById('search-library').value.toLowerCase();
+
+            // Trip calculation
+            let recipeMissing = [];
+            plannedIds.forEach(id => {
+                const r = library.find(x => x.id == id);
+                if(r) recipeMissing = [...recipeMissing, ...r.ings.filter(i => !pantry.some(p => i.toLowerCase().includes(p.toLowerCase())))];
+            });
+            const virtualInv = [...pantry, ...extras, ...recipeMissing];
+
+            // Render Pantry
+            document.getElementById('pantry-list').innerHTML = pantry.map((item, idx) => `<span class="bg-white px-2 py-1 rounded-full border border-slate-200 shadow-sm">${item} <button onclick="removePantry(${idx})" class="text-red-400 font-black ml-1">×</button></span>`).join('');
+            
+            // Render Trip
+            document.getElementById('recipe-shopping-list').innerHTML = [...new Set(recipeMissing)].map(item => `<li>• ${item}</li>`).join('');
+            document.getElementById('extra-shopping-list').innerHTML = extras.map((item, idx) => `<li class="flex justify-between"><span>• ${item}</span> <button onclick="removeExtra(${idx})" class="text-red-300 font-black">×</button></li>`).join('');
+
+            // Render Plan
+            document.getElementById('current-plan-list').innerHTML = plannedIds.length === 0 ? `<p class="text-indigo-300 italic text-xs">Plan is empty.</p>` : 
+                plannedIds.map(id => {
+                    const r = library.find(x => x.id == id);
+                    return `<div class="bg-indigo-800 p-3 rounded-xl flex justify-between items-center mb-2"><span class="font-bold text-xs">🥗 ${r.name}</span><button onclick="unplanMeal(${id})" class="text-indigo-400 text-[10px] font-black uppercase">Remove</button></div>`;
+                }).join('');
+
+            // Filtered Suggestions
+            const suggestions = library.map(r => {
+                const realMissing = r.ings.filter(i => !pantry.some(p => i.toLowerCase().includes(p.toLowerCase())));
+                const virtualMissing = r.ings.filter(i => !virtualInv.some(p => i.toLowerCase().includes(p.toLowerCase())));
+                const owned = r.ings.length - realMissing.length;
+                return { ...r, realMissing, virtualMissing, owned, isPlanned: plannedIds.includes(r.id) };
+            })
+            .filter(r => !r.isPlanned && r.owned > 0 && (r.name.toLowerCase().includes(plannerSearch) || r.ings.some(i => i.toLowerCase().includes(plannerSearch))))
+            .sort((a, b) => a.virtualMissing.length - b.virtualMissing.length);
+
+            document.getElementById('suggestions-list').innerHTML = suggestions.map(r => {
+                const isReady = r.virtualMissing.length === 0;
+                return `
+                <div id="recipe-card-${r.id}" class="p-4 border-2 rounded-2xl flex flex-col gap-3 ${isReady ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-100 shadow-sm'}">
+                    <div class="flex justify-between items-start">
+                        <div><h3 class="font-bold text-sm text-slate-800 uppercase">${r.name}</h3><p class="text-[9px] font-black uppercase mt-1 ${isReady ? 'text-emerald-600' : 'text-amber-500'}">${isReady ? 'READY' : r.virtualMissing.length + ' missing'}</p></div>
+                        <button onclick="planMeal(${r.id})" class="bg-slate-900 text-white px-4 py-2 rounded-xl font-bold text-[10px]">Plan</button>
+                    </div>
+                    ${!isReady ? `<div class="bg-slate-50 p-2 rounded-lg text-[10px] text-slate-500"><b>Buy:</b> ${r.virtualMissing.join(', ')}</div>` : ''}
+                </div>`;
+            }).join('');
+
+            // Filtered Library
+            const filteredLib = library.filter(r => r.name.toLowerCase().includes(librarySearch) || r.ings.some(i => i.toLowerCase().includes(librarySearch)));
+            document.getElementById('full-recipe-list').innerHTML = filteredLib.map(r => `
+                <div class="bg-white p-3 rounded-xl border flex flex-col gap-2 shadow-sm">
+                    <h3 class="font-bold text-[10px] uppercase truncate">${r.name}</h3>
+                    <div class="flex gap-1">
+                        <button onclick="planMeal(${r.id})" class="flex-1 bg-emerald-600 text-white text-[9px] font-bold py-1 rounded">PLAN</button>
+                        <button onclick="openEdit(${r.id})" class="flex-1 bg-slate-100 text-slate-600 text-[9px] font-bold py-1 rounded">EDIT</button>
+                        <button onclick="deleteRecipe(${r.id})" class="px-2 bg-red-50 text-red-400 text-[9px] font-bold py-1 rounded">×</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        // Logic Functions
+        function openEdit(id) {
+            const library = [...preloadedRecipes, ...userAdded];
+            const r = library.find(x => x.id == id);
+            document.getElementById('modal-title').innerText = "Edit Recipe";
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-name').value = r.name;
+            document.getElementById('edit-ings').value = r.ings.join(', ');
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+        function openAddModal() {
+            document.getElementById('modal-title').innerText = "Add New Recipe";
+            document.getElementById('edit-id').value = "";
+            document.getElementById('edit-name').value = "";
+            document.getElementById('edit-ings').value = "";
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+        function saveEdit() {
+            const id = document.getElementById('edit-id').value;
+            const name = document.getElementById('edit-name').value;
+            const ings = document.getElementById('edit-ings').value.split(',').map(i => i.trim()).filter(i => i);
+            if(!name || !ings.length) return;
+            if(id) {
+                const idx = userAdded.findIndex(r => r.id == id);
+                if(idx > -1) userAdded[idx] = { id: parseFloat(id), name, ings };
+                else userAdded.push({ id: parseFloat(id), name, ings });
+            } else {
+                userAdded.push({ id: Date.now(), name, ings });
+            }
+            closeEdit(); render();
+        }
+        function closeEdit() { document.getElementById('editModal').classList.add('hidden'); }
+        function planMeal(id) { if(!plannedIds.includes(id)) { plannedIds.push(id); render(); } }
+        function unplanMeal(id) { plannedIds = plannedIds.filter(x => x !== id); render(); }
+        function clearTrip() { plannedIds = []; extras = []; render(); }
+        function deleteRecipe(id) { userAdded = userAdded.filter(r => r.id !== id); render(); }
+        function pickRandom() {
+            const pool = [...preloadedRecipes, ...userAdded].filter(r => !plannedIds.includes(r.id));
+            if(pool.length) {
+                const pick = pool[Math.floor(Math.random() * pool.length)];
+                document.getElementById('search-planner').value = pick.name; render();
+                const card = document.getElementById(`recipe-card-${pick.id}`);
+                if(card) { card.classList.add('ring-4', 'ring-indigo-500'); setTimeout(() => card.classList.remove('ring-4', 'ring-indigo-500'), 2000); }
+            }
+        }
+        function restorePantry() { pantry = [...initialStaples]; render(); }
+        function addPantryItem() { const v = document.getElementById('pantry-input').value.trim(); if(v) { pantry.push(v); document.getElementById('pantry-input').value = ''; render(); } }
+        function removePantry(idx) { pantry.splice(idx, 1); render(); }
+        function addExtraItem() { const v = document.getElementById('extra-input').value.trim(); if(v) { extras.push(v); document.getElementById('extra-input').value = ''; render(); } }
+        function removeExtra(idx) { extras.splice(idx, 1); render(); }
+
+        render();
+    </script>
+</body>
+</html>
