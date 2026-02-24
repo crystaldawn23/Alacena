@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alacena | Search Enabled</title>
+    <title>Alacena | Pro Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 text-slate-900 pb-40">
@@ -42,20 +42,17 @@
                 
                 <div class="bg-emerald-50 p-6 rounded-2xl border-2 border-emerald-200 h-fit sticky top-24 shadow-sm">
                     <h2 class="text-xl font-bold mb-4 text-emerald-900">🛒 Trip List</h2>
-                    <div class="space-y-4">
-                        <ul id="recipe-shopping-list" class="space-y-2 font-bold text-emerald-800 text-sm italic"></ul>
-                        <hr class="border-emerald-200">
-                        <div class="flex gap-2"><input type="text" id="extra-input" placeholder="Milk, etc..." class="flex-1 p-2 border rounded text-xs outline-none"><button onclick="addExtraItem()" class="bg-emerald-600 text-white px-3 rounded font-bold">+</button></div>
-                        <ul id="extra-shopping-list" class="space-y-2 font-bold text-emerald-800 text-sm"></ul>
-                        <button onclick="clearTrip()" class="w-full mt-4 text-[10px] text-red-500 font-black uppercase tracking-widest border border-red-200 py-2 rounded-lg">Reset All</button>
-                    </div>
+                    <ul id="recipe-shopping-list" class="space-y-2 font-bold text-emerald-800 text-sm mb-4 italic"></ul>
+                    <hr class="border-emerald-200 mb-4">
+                    <div class="flex gap-2"><input type="text" id="extra-input" placeholder="Extras..." class="flex-1 p-2 border rounded text-xs"><button onclick="addExtraItem()" class="bg-emerald-600 text-white px-3 rounded">+</button></div>
+                    <ul id="extra-shopping-list" class="mt-4 space-y-2 font-bold text-emerald-800 text-sm"></ul>
+                    <button onclick="clearTrip()" class="w-full mt-6 text-[10px] text-red-500 font-black border border-red-200 py-2 rounded-lg">Reset Trip</button>
                 </div>
             </div>
         </section>
 
         <section id="library-tab" class="hidden">
             <div class="bg-white p-6 rounded-2xl shadow-sm border mb-6">
-                <h2 class="text-xl font-bold mb-4 text-emerald-800 uppercase text-xs">Library Search & Add</h2>
                 <div class="flex flex-col md:flex-row gap-2 mb-4">
                     <input type="text" id="search-library" oninput="render()" placeholder="Search your collection..." class="flex-1 p-2 border rounded-xl text-sm outline-none">
                     <button onclick="openAddModal()" class="bg-emerald-600 text-white px-6 py-2 rounded-xl font-bold text-sm">+ Add Recipe</button>
@@ -88,11 +85,12 @@
 
     <script src="recipes.js"></script>
     <script>
-        const initialStaples = ["chicken breasts", "chicken thighs", "ground beef", "pork chops", "bacon", "shrimp", "butter", "olive oil", "vegetable oil", "salt", "pepper", "garlic", "onion", "red onion", "chicken broth", "beef broth", "rice", "orzo", "spaghetti", "linguine", "ramen noodles", "flour", "honey", "soy sauce", "balsamic vinegar", "lime juice", "lemon juice", "cumin", "chili powder", "paprika", "dried rosemary", "italian seasoning", "taco seasoning", "parmesan", "cheddar", "monterey jack", "salsa", "enchilada sauce", "diced tomatoes", "grape tomatoes", "romaine", "spinach", "cucumber", "avocados", "cilantro", "fresh basil", "frozen corn", "black beans"];
+        const initialStaples = ["chicken breasts", "chicken thighs", "ground beef", "pork chops", "bacon", "shrimp", "butter", "olive oil", "vegetable oil", "salt", "pepper", "garlic", "onion", "red onion", "chicken broth", "beef broth", "rice", "orzo", "spaghetti", "linguine", "flour", "honey", "soy sauce", "balsamic vinegar", "lime juice", "lemon juice", "cumin", "chili powder", "paprika", "dried rosemary", "italian seasoning", "taco seasoning", "parmesan", "cheddar", "monterey jack", "salsa", "enchilada sauce", "diced tomatoes", "grape tomatoes", "romaine", "spinach", "cucumber", "avocados", "cilantro", "fresh basil", "frozen corn", "black beans"];
+        const meatKeywords = ["chicken", "beef", "pork", "steak", "shrimp", "sausage", "kielbasa", "meat", "roast", "loin", "chops", "brisket", "hen", "turkey"];
 
-        let userAdded = JSON.parse(localStorage.getItem('alacena_v26_user')) || [];
-        let pantry = JSON.parse(localStorage.getItem('alacena_v26_pantry')) || [...initialStaples];
-        let extras = JSON.parse(localStorage.getItem('alacena_v26_extras')) || [];
+        let userAdded = JSON.parse(localStorage.getItem('alacena_v27_user')) || [];
+        let pantry = JSON.parse(localStorage.getItem('alacena_v27_pantry')) || [...initialStaples];
+        let extras = JSON.parse(localStorage.getItem('alacena_v27_extras')) || [];
         let plannedIds = [];
 
         function showTab(tab) {
@@ -102,15 +100,14 @@
         }
 
         function render() {
-            localStorage.setItem('alacena_v26_user', JSON.stringify(userAdded));
-            localStorage.setItem('alacena_v26_pantry', JSON.stringify(pantry));
-            localStorage.setItem('alacena_v26_extras', JSON.stringify(extras));
+            localStorage.setItem('alacena_v27_user', JSON.stringify(userAdded));
+            localStorage.setItem('alacena_v27_pantry', JSON.stringify(pantry));
+            localStorage.setItem('alacena_v27_extras', JSON.stringify(extras));
             
             const library = (typeof preloadedRecipes !== 'undefined') ? [...preloadedRecipes, ...userAdded] : [...userAdded];
             const plannerSearch = document.getElementById('search-planner').value.toLowerCase();
             const librarySearch = document.getElementById('search-library').value.toLowerCase();
 
-            // Trip calculation
             let recipeMissing = [];
             plannedIds.forEach(id => {
                 const r = library.find(x => x.id == id);
@@ -119,57 +116,70 @@
             const virtualInv = [...pantry, ...extras, ...recipeMissing];
 
             // Render Pantry
-            document.getElementById('pantry-list').innerHTML = pantry.map((item, idx) => `<span class="bg-white px-2 py-1 rounded-full border border-slate-200 shadow-sm">${item} <button onclick="removePantry(${idx})" class="text-red-400 font-black ml-1">×</button></span>`).join('');
+            document.getElementById('pantry-list').innerHTML = pantry.map((item, idx) => `<span class="bg-white px-2 py-1 rounded-full border border-slate-200">${item} <button onclick="removePantry(${idx})" class="text-red-400">×</button></span>`).join('');
             
             // Render Trip
             document.getElementById('recipe-shopping-list').innerHTML = [...new Set(recipeMissing)].map(item => `<li>• ${item}</li>`).join('');
-            document.getElementById('extra-shopping-list').innerHTML = extras.map((item, idx) => `<li class="flex justify-between"><span>• ${item}</span> <button onclick="removeExtra(${idx})" class="text-red-300 font-black">×</button></li>`).join('');
+            document.getElementById('extra-shopping-list').innerHTML = extras.map((item, idx) => `<li class="flex justify-between"><span>• ${item}</span> <button onclick="removeExtra(${idx})" class="text-red-300">×</button></li>`).join('');
 
             // Render Plan
-            document.getElementById('current-plan-list').innerHTML = plannedIds.length === 0 ? `<p class="text-indigo-300 italic text-xs">Plan is empty.</p>` : 
+            document.getElementById('current-plan-list').innerHTML = plannedIds.length === 0 ? `<p class="text-indigo-300 italic text-xs">No meals planned.</p>` : 
                 plannedIds.map(id => {
                     const r = library.find(x => x.id == id);
-                    return `<div class="bg-indigo-800 p-3 rounded-xl flex justify-between items-center mb-2"><span class="font-bold text-xs">🥗 ${r.name}</span><button onclick="unplanMeal(${id})" class="text-indigo-400 text-[10px] font-black uppercase">Remove</button></div>`;
+                    return `<div class="bg-indigo-800 p-3 rounded-xl flex justify-between items-center mb-2"><span class="font-bold text-xs uppercase">🥗 ${r.name}</span><button onclick="unplanMeal(${id})" class="text-indigo-400 text-[10px] font-black uppercase">Remove</button></div>`;
                 }).join('');
 
-            // Filtered Suggestions
+            // Filtered & Sorted Suggestions
             const suggestions = library.map(r => {
                 const realMissing = r.ings.filter(i => !pantry.some(p => i.toLowerCase().includes(p.toLowerCase())));
                 const virtualMissing = r.ings.filter(i => !virtualInv.some(p => i.toLowerCase().includes(p.toLowerCase())));
                 const owned = r.ings.length - realMissing.length;
-                return { ...r, realMissing, virtualMissing, owned, isPlanned: plannedIds.includes(r.id) };
+                
+                // MEAT PRIORITY LOGIC
+                const isMeatPriority = virtualMissing.length === 1 && meatKeywords.some(meat => virtualMissing[0].toLowerCase().includes(meat));
+
+                return { ...r, realMissing, virtualMissing, owned, isPlanned: plannedIds.includes(r.id), isMeatPriority };
             })
             .filter(r => !r.isPlanned && r.owned > 0 && (r.name.toLowerCase().includes(plannerSearch) || r.ings.some(i => i.toLowerCase().includes(plannerSearch))))
-            .sort((a, b) => a.virtualMissing.length - b.virtualMissing.length);
+            .sort((a, b) => {
+                if (a.isMeatPriority && !b.isMeatPriority) return -1;
+                if (!a.isMeatPriority && b.isMeatPriority) return 1;
+                return a.virtualMissing.length - b.virtualMissing.length;
+            });
 
             document.getElementById('suggestions-list').innerHTML = suggestions.map(r => {
                 const isReady = r.virtualMissing.length === 0;
                 return `
-                <div id="recipe-card-${r.id}" class="p-4 border-2 rounded-2xl flex flex-col gap-3 ${isReady ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-100 shadow-sm'}">
+                <div id="recipe-card-${r.id}" class="p-4 border-2 rounded-2xl flex flex-col gap-3 ${isReady ? 'bg-emerald-50 border-emerald-200' : (r.isMeatPriority ? 'bg-indigo-50 border-indigo-200 shadow-md' : 'bg-white border-slate-100 shadow-sm')}">
                     <div class="flex justify-between items-start">
-                        <div><h3 class="font-bold text-sm text-slate-800 uppercase">${r.name}</h3><p class="text-[9px] font-black uppercase mt-1 ${isReady ? 'text-emerald-600' : 'text-amber-500'}">${isReady ? 'READY' : r.virtualMissing.length + ' missing'}</p></div>
+                        <div>
+                            <h3 class="font-bold text-sm text-slate-800 uppercase tracking-tight">${r.name}</h3>
+                            <p class="text-[9px] font-black uppercase mt-1 ${isReady ? 'text-emerald-600' : (r.isMeatPriority ? 'text-indigo-600' : 'text-amber-500')}">
+                                ${isReady ? '✅ READY' : (r.isMeatPriority ? '🥩 JUST BUY THE MEAT' : '⚠️ Missing ' + r.virtualMissing.length)}
+                            </p>
+                        </div>
                         <button onclick="planMeal(${r.id})" class="bg-slate-900 text-white px-4 py-2 rounded-xl font-bold text-[10px]">Plan</button>
                     </div>
-                    ${!isReady ? `<div class="bg-slate-50 p-2 rounded-lg text-[10px] text-slate-500"><b>Buy:</b> ${r.virtualMissing.join(', ')}</div>` : ''}
+                    ${!isReady ? `<div class="bg-slate-50 p-2 rounded-lg text-[10px] text-slate-500 leading-tight"><b>Need:</b> ${r.virtualMissing.join(', ')}</div>` : ''}
                 </div>`;
             }).join('');
 
-            // Filtered Library
+            // Library
             const filteredLib = library.filter(r => r.name.toLowerCase().includes(librarySearch) || r.ings.some(i => i.toLowerCase().includes(librarySearch)));
             document.getElementById('full-recipe-list').innerHTML = filteredLib.map(r => `
-                <div class="bg-white p-3 rounded-xl border flex flex-col gap-2 shadow-sm">
-                    <h3 class="font-bold text-[10px] uppercase truncate">${r.name}</h3>
+                <div class="bg-white p-3 rounded-xl border flex flex-col gap-2 shadow-sm text-[10px] font-bold uppercase">
+                    <span class="truncate">${r.name}</span>
                     <div class="flex gap-1">
-                        <button onclick="planMeal(${r.id})" class="flex-1 bg-emerald-600 text-white text-[9px] font-bold py-1 rounded">PLAN</button>
-                        <button onclick="openEdit(${r.id})" class="flex-1 bg-slate-100 text-slate-600 text-[9px] font-bold py-1 rounded">EDIT</button>
-                        <button onclick="deleteRecipe(${r.id})" class="px-2 bg-red-50 text-red-400 text-[9px] font-bold py-1 rounded">×</button>
+                        <button onclick="planMeal(${r.id})" class="flex-1 bg-emerald-600 text-white py-1 rounded">PLAN</button>
+                        <button onclick="openEdit(${r.id})" class="flex-1 bg-slate-100 text-slate-600 py-1 rounded">EDIT</button>
+                        <button onclick="deleteRecipe(${r.id})" class="px-2 bg-red-50 text-red-400 py-1 rounded">×</button>
                     </div>
                 </div>`).join('');
         }
 
-        // Logic Functions
+        // Action Logic
         function openEdit(id) {
-            const library = [...preloadedRecipes, ...userAdded];
+            const library = (typeof preloadedRecipes !== 'undefined') ? [...preloadedRecipes, ...userAdded] : [...userAdded];
             const r = library.find(x => x.id == id);
             document.getElementById('modal-title').innerText = "Edit Recipe";
             document.getElementById('edit-id').value = id;
@@ -179,23 +189,18 @@
         }
         function openAddModal() {
             document.getElementById('modal-title').innerText = "Add New Recipe";
-            document.getElementById('edit-id').value = "";
-            document.getElementById('edit-name').value = "";
-            document.getElementById('edit-ings').value = "";
+            document.getElementById('edit-id').value = ""; document.getElementById('edit-name').value = ""; document.getElementById('edit-ings').value = "";
             document.getElementById('editModal').classList.remove('hidden');
         }
         function saveEdit() {
             const id = document.getElementById('edit-id').value;
             const name = document.getElementById('edit-name').value;
             const ings = document.getElementById('edit-ings').value.split(',').map(i => i.trim()).filter(i => i);
-            if(!name || !ings.length) return;
             if(id) {
                 const idx = userAdded.findIndex(r => r.id == id);
                 if(idx > -1) userAdded[idx] = { id: parseFloat(id), name, ings };
                 else userAdded.push({ id: parseFloat(id), name, ings });
-            } else {
-                userAdded.push({ id: Date.now(), name, ings });
-            }
+            } else { userAdded.push({ id: Date.now(), name, ings }); }
             closeEdit(); render();
         }
         function closeEdit() { document.getElementById('editModal').classList.add('hidden'); }
@@ -204,12 +209,10 @@
         function clearTrip() { plannedIds = []; extras = []; render(); }
         function deleteRecipe(id) { userAdded = userAdded.filter(r => r.id !== id); render(); }
         function pickRandom() {
-            const pool = [...preloadedRecipes, ...userAdded].filter(r => !plannedIds.includes(r.id));
+            const pool = (typeof preloadedRecipes !== 'undefined') ? [...preloadedRecipes, ...userAdded].filter(r => !plannedIds.includes(r.id)) : userAdded.filter(r => !plannedIds.includes(r.id));
             if(pool.length) {
                 const pick = pool[Math.floor(Math.random() * pool.length)];
                 document.getElementById('search-planner').value = pick.name; render();
-                const card = document.getElementById(`recipe-card-${pick.id}`);
-                if(card) { card.classList.add('ring-4', 'ring-indigo-500'); setTimeout(() => card.classList.remove('ring-4', 'ring-indigo-500'), 2000); }
             }
         }
         function restorePantry() { pantry = [...initialStaples]; render(); }
@@ -221,4 +224,7 @@
         render();
     </script>
 </body>
+</html>
+</body>
+
 </html>
